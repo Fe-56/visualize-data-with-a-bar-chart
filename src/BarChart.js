@@ -4,23 +4,19 @@ import * as d3 from 'd3';
 const BarChart = (props) => {
     const d3BarChart = React.useRef();
     const dates = [];
-    const rawDates = [];
     const gdps = [];
     const fullData = [];
-    const height = 800;
-    const width = 1000;
+    const height = 650;
+    const width = 1200;
 
     useEffect(() => {
         fetch("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json")
         .then(res => res.json())
         .then((result) => {
-            var parseTime = d3.timeParse("%Y-%m-%d");
-
             for (let i = 0; i < result.data.length; i++){
-                const date = parseTime(result.data[i][0]);
+                const date = result.data[i][0];
                 const gdp = result.data[i][1];
                 dates.push(date);
-                rawDates.push(result.data[i][0]);
                 gdps.push(gdp);
                 fullData.push({
                     date: date,
@@ -28,57 +24,115 @@ const BarChart = (props) => {
                 });
             }
 
+            let dateMin = d3.min(fullData, (item) => item.date);
+            let dateMax = d3.max(fullData, (item) => item.date);
+            dateMin = new Date(dateMin);
+            dateMax = new Date(dateMax);
+            dateMax.setMonth(dateMax.getMonth() + 3);
+            
             const xScale = d3.scaleTime()
-                        .domain(d3.extent(dates))
-                        .range([0, width/1.1]);
+                            .domain([dateMin, dateMax])
+                            .range([0, width]);
             const xAxis = d3.axisBottom().scale(xScale);
             const yScale = d3.scaleLinear()
-                            .domain([0, d3.max(gdps)])
-                            .range([0, -height/1.5]);
-            const yAxis = d3.axisLeft().scale(yScale);
+                            .domain([0, d3.max(gdps) + 2000])
+                            .range([height, 0]);
+            const yAxis = d3.axisLeft(yScale);
 
-            var svg = d3.select(d3BarChart.current)
-                        .attr("width", width)
+            var svg = d3.select(".holder")
+                        .append("svg")
+                        .attr("width", width + 100)
                         .attr("height", height)
                         .append("g")
+                        .call(xAxis)
                         .attr('id', 'x-axis')
-                        .attr("transform", `translate(60, ${height/1.3})`)
+                        .attr("transform", `translate(70, ${height - 40})`)
                         .attr("color", "white")
-                        .call(xAxis.ticks(d3.timeYear.every(5)))
                         .append("g")
+                        .call(yAxis)
                         .attr('id', 'y-axis')
-                        .attr("transform", "translate(0, 0)")
-                        .call(yAxis);
+                        .attr("transform", `translate(0, ${-height})`);
+
+            const barWidth = width/(fullData.length);
 
             svg.selectAll("rect")
                 .data(fullData)
                 .enter()
                 .append("rect")
-                .attr("data-date", (item, index) => {
-                    return rawDates[index];
+                .attr("class", "bar")
+                .attr("data-date", (item) => {
+                    return item.date;
                 })
                 .attr("data-gdp", (item) => {
                     return item.gdp;
                 })
-                .attr("class", "bar")
-                .attr("x", (item, index) => {
-                    return xScale(item.date);
+                .attr("x", (item) => {
+                    return xScale(new Date(item.date));
                 })
                 .attr("y", (item) => {
                     return yScale(item.gdp);
                 })
-                .attr("width", width/dates.length - 1)
+                .attr("width", barWidth)
                 .attr("height", (item) => {
-                    return -yScale(item.gdp)
+                    return height - yScale(item.gdp);
                 })
-                .style("fill", "#CCFF00");
+                .style("fill", "#CCFF00")
+                .on("mouseover", (event, item) => {
+                    const date = new Date(item.date);
+                    const year = date.getFullYear();
+                    const month = date.getMonth() + 1;
+                    let quarter;
+                    let gdp = 0;
+
+                    switch (month){
+                        case 1:
+                            quarter = "Q1";
+                            break;
+
+                        case 4:
+                            quarter = "Q2";
+                            break;
+
+                        case 7:
+                            quarter = "Q3";
+                            break;
+
+                        case 10:
+                            quarter = "Q4";
+                            break;
+
+                        default:
+                            quarter = "Q1";
+                    }
+
+                    if (item.gdp >= 10000){
+                        gdp = item.gdp.toString().slice(0, 2) + "," + item.gdp.toString().slice(2);
+                    }
+
+                    else if (item.gdp >= 1000){
+                        gdp = item.gdp.toString().slice(0, 1) + "," + item.gdp.toString().slice(1);
+                    }
+
+                    else{
+                        gdp = item.gdp.toString();
+                    }
+
+                    let tooltip = document.getElementById("tooltip");
+                    tooltip.style.visibility = "visible";
+                    d3.select(event.currentTarget).style("fill", "black");
+                    const tooltipText = `${year} ${quarter}<br />$${gdp} Billion`;
+                    tooltip.innerHTML = tooltipText;
+                    tooltip.setAttribute("data-date", d3.select(event.currentTarget).attr("data-date"));
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.currentTarget).style("fill", "#CCFF00");
+                    document.getElementById("tooltip").style.visibility = "hidden";
+                });
         })
     }, []);
 
     return (
-        <div>
-            <svg ref={d3BarChart} />
-        </div>
+        <div className="holder"></div>
     )
 }
 

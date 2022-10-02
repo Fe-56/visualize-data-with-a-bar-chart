@@ -18,3 +18,9 @@ code {
     font-family: monaco;
     margin-top: 120px
 }
+
+#tooltip {
+    font-family: monaco;
+    color: #CCFF00;
+    visibility: hidden;
+}
