@@ -15,8 +15,6 @@ const BarChart = (props) => {
             const fullData = [];
 
             for (let i = 0; i < result.data.length; i++){
-                // const parseTime = d3.timeParse("%Y-%m-%d %Z");
-                // const date = parseTime(result.data[i][0] + " -0000");
                 const date = parseTime(result.data[i][0]);
                 const gdp = result.data[i][1];
                 dates.push(date);
@@ -27,17 +25,11 @@ const BarChart = (props) => {
                 });
             }
 
-            // console.log(fullData)
-            // console.log(dates)
-            // console.log(parseTime("2015-07-01"))
-
             let dateMin = d3.min(fullData, (item) => item.date);
             let dateMax = d3.max(fullData, (item) => item.date);
             dateMax.setMonth(dateMax.getMonth() + 3);
 
-            // console.log(dateMax)
             fullData[274].date = parseTime("2015-07-01");
-            // console.log(fullData)
             
             const xScale = d3.scaleTime()
                             .domain([dateMin, dateMax])
@@ -48,23 +40,27 @@ const BarChart = (props) => {
                             .range([height, 0]);
             const yAxis = d3.axisLeft(yScale);
 
-            var svg = d3.select("#holder")
-                        .append("svg")
-                        .attr("width", width + 100)
-                        .attr("height", height)
-                        .append("g")
-                        .call(xAxis)
-                        .attr('id', 'x-axis')
-                        .attr("transform", `translate(70, ${height - 40})`)
-                        .attr("color", "white")
-                        .append("g")
-                        .call(yAxis)
-                        .attr('id', 'y-axis')
-                        .attr("transform", `translate(0, ${-height})`);
+            d3.select("#holder")
+                .append("svg")
+                .attr("width", width + 100)
+                .attr("height", height)
+                .append("g")
+                .call(xAxis)
+                .attr('id', 'x-axis')
+                .attr("transform", `translate(70, ${height - 40})`)
+                .attr("color", "white");
+                
+            d3.select("svg")
+                .append("g")
+                .call(yAxis)
+                .attr('id', 'y-axis')
+                .attr("transform", `translate(70, -40)`)
+                .attr("color", "white");
 
             const barWidth = width/(fullData.length);
 
-            svg.selectAll("rect")
+            d3.select('svg')
+                .selectAll("rect")
                 .data(fullData)
                 .enter()
                 .append("rect")
@@ -76,10 +72,10 @@ const BarChart = (props) => {
                     return item.gdp;
                 })
                 .attr("x", (item) => {
-                    return xScale(item.date);
+                    return xScale(item.date) + 70;
                 })
                 .attr("y", (item) => {
-                    return yScale(item.gdp);
+                    return yScale(item.gdp) - 40;
                 })
                 .attr("width", barWidth)
                 .attr("height", (item) => {
