@@ -29,7 +29,7 @@ const BarChart = (props) => {
             let dateMax = d3.max(fullData, (item) => item.date);
             dateMax.setMonth(dateMax.getMonth() + 3);
 
-            fullData[274].date = parseTime("2015-07-01");
+            fullData[274].date = parseTime("2015-07-01"); // if I do not do this, fullData[274].date will always be a date object with the date 1 Oct 2015 instead of 1 Jul 2015
             
             const xScale = d3.scaleTime()
                             .domain([dateMin, dateMax])
