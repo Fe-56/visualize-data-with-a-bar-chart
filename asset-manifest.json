@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/visualize-data-with-a-bar-chart/static/css/main.79a0b5cd.css",
+    "main.js": "/visualize-data-with-a-bar-chart/static/js/main.8485de27.js",
+    "index.html": "/visualize-data-with-a-bar-chart/index.html",
+    "main.79a0b5cd.css.map": "/visualize-data-with-a-bar-chart/static/css/main.79a0b5cd.css.map",
+    "main.8485de27.js.map": "/visualize-data-with-a-bar-chart/static/js/main.8485de27.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.79a0b5cd.css",
+    "static/js/main.8485de27.js"
+  ]
+}
