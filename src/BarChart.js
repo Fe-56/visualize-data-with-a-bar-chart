@@ -2,10 +2,6 @@ import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 
 const BarChart = (props) => {
-    const d3BarChart = React.useRef();
-    const dates = [];
-    const gdps = [];
-    const fullData = [];
     const height = 650;
     const width = 1200;
 
@@ -13,8 +9,15 @@ const BarChart = (props) => {
         fetch("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json")
         .then(res => res.json())
         .then((result) => {
+            const parseTime = d3.utcParse("%Y-%m-%d");
+            const dates = [];
+            const gdps = [];
+            const fullData = [];
+
             for (let i = 0; i < result.data.length; i++){
-                const date = result.data[i][0];
+                // const parseTime = d3.timeParse("%Y-%m-%d %Z");
+                // const date = parseTime(result.data[i][0] + " -0000");
+                const date = parseTime(result.data[i][0]);
                 const gdp = result.data[i][1];
                 dates.push(date);
                 gdps.push(gdp);
@@ -24,11 +27,17 @@ const BarChart = (props) => {
                 });
             }
 
+            // console.log(fullData)
+            // console.log(dates)
+            // console.log(parseTime("2015-07-01"))
+
             let dateMin = d3.min(fullData, (item) => item.date);
             let dateMax = d3.max(fullData, (item) => item.date);
-            dateMin = new Date(dateMin);
-            dateMax = new Date(dateMax);
             dateMax.setMonth(dateMax.getMonth() + 3);
+
+            // console.log(dateMax)
+            fullData[274].date = parseTime("2015-07-01");
+            // console.log(fullData)
             
             const xScale = d3.scaleTime()
                             .domain([dateMin, dateMax])
@@ -39,7 +48,7 @@ const BarChart = (props) => {
                             .range([height, 0]);
             const yAxis = d3.axisLeft(yScale);
 
-            var svg = d3.select(".holder")
+            var svg = d3.select("#holder")
                         .append("svg")
                         .attr("width", width + 100)
                         .attr("height", height)
@@ -61,13 +70,13 @@ const BarChart = (props) => {
                 .append("rect")
                 .attr("class", "bar")
                 .attr("data-date", (item) => {
-                    return item.date;
+                    return item.date.toISOString().split('T')[0];
                 })
                 .attr("data-gdp", (item) => {
                     return item.gdp;
                 })
                 .attr("x", (item) => {
-                    return xScale(new Date(item.date));
+                    return xScale(item.date);
                 })
                 .attr("y", (item) => {
                     return yScale(item.gdp);
@@ -132,7 +141,7 @@ const BarChart = (props) => {
     }, []);
 
     return (
-        <div className="holder"></div>
+        <div id="holder"></div>
     )
 }
 
